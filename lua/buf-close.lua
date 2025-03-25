@@ -101,7 +101,7 @@ return {
     setup = function(opts)
         -- register commands
         for _, cmd in ipairs(commands) do
-            for _, name in cmd.names do
+            for _, name in ipairs(cmd.names) do
                 vim.api.nvim_create_user_command(name, function(opt)
                     local force = opt.bang
 
