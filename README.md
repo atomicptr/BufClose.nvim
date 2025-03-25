@@ -4,6 +4,14 @@ Handy commands for quickly closing several buffers
 
 Inspired by Helix buffer commands
 
+## Install
+
+### Lazy
+
+```lua
+{ "atomicptr/BufClose.nvim", lazy = false }
+```
+
 ## Commands
 
 - **BufClose** or **Bc**: Close the current buffer

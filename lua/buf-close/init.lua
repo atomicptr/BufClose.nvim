@@ -105,13 +105,13 @@ local commands = {
     { names = { "BufCloseRight", "Bcr" }, fn = buf_close_right, desc = "Close all buffers right of the current one" },
 }
 
+-- register commands
+for _, cmd in ipairs(commands) do
+    for _, name in cmd.names do
+        vim.api.nvim_create_user_command(name, call_with_bang(cmd.fn), { bang = true, desc = cmd.desc })
+    end
+end
+
 return {
-    --- Setup BufClose.nvim
-    setup = function()
-        for _, cmd in ipairs(commands) do
-            for _, name in cmd.names do
-                vim.api.nvim_create_user_command(name, call_with_bang(cmd.fn), { bang = true, desc = cmd.desc })
-            end
-        end
-    end,
+    setup = function(params) end,
 }
