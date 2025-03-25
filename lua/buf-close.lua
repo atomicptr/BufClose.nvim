@@ -79,14 +79,6 @@ local function buf_close_left(force)
     end
 end
 
---- Call function with force parameter if bang is defined
---- @param func function(boolean|nil)
-local function call_with_bang(func)
-    return function(opt)
-        func(opt.bang)
-    end
-end
-
 ---@class Command
 ---@field names string[]
 ---@field fn function(boolean|nil)
@@ -105,13 +97,24 @@ local commands = {
     { names = { "BufCloseRight", "Bcr" }, fn = buf_close_right, desc = "Close all buffers right of the current one" },
 }
 
--- register commands
-for _, cmd in ipairs(commands) do
-    for _, name in cmd.names do
-        vim.api.nvim_create_user_command(name, call_with_bang(cmd.fn), { bang = true, desc = cmd.desc })
-    end
-end
-
 return {
-    setup = function(params) end,
+    setup = function(opts)
+        -- register commands
+        for _, cmd in ipairs(commands) do
+            for _, name in cmd.names do
+                vim.api.nvim_create_user_command(name, function(opt)
+                    local force = opt.bang
+
+                    if opts.always_force then
+                        force = true
+                    end
+
+                    cmd.fn(force)
+                end, { bang = true, desc = cmd.desc })
+            end
+        end
+    end,
+    opts = {
+        always_force = false,
+    },
 }
