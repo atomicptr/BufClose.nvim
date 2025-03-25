@@ -97,24 +97,28 @@ local commands = {
     { names = { "BufCloseRight", "Bcr" }, fn = buf_close_right, desc = "Close all buffers right of the current one" },
 }
 
-return {
-    setup = function(opts)
-        -- register commands
-        for _, cmd in ipairs(commands) do
-            for _, name in ipairs(cmd.names) do
-                vim.api.nvim_create_user_command(name, function(opt)
-                    local force = opt.bang
+local opts = {
+    always_force = false,
+}
 
-                    if opts.always_force then
-                        force = true
-                    end
+-- register commands
+for _, cmd in ipairs(commands) do
+    for _, name in ipairs(cmd.names) do
+        vim.api.nvim_create_user_command(name, function(opt)
+            local force = opt.bang
 
-                    cmd.fn(force)
-                end, { bang = true, desc = cmd.desc })
+            if opts.always_force then
+                force = true
             end
-        end
+
+            cmd.fn(force)
+        end, { bang = true, desc = cmd.desc })
+    end
+end
+
+return {
+    setup = function(user_opts)
+        opts = vim.tbl_extend("force", opts, user_opts or {})
     end,
-    opts = {
-        always_force = false,
-    },
+    opts = opts,
 }
