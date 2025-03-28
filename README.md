@@ -9,15 +9,7 @@ Inspired by Helix buffer commands
 ### Lazy
 
 ```lua
-    {
-        "atomicptr/BufClose.nvim",
-        lazy = false,
-        config = function()
-            require("buf-close").setup {
-                always_force = false,
-            }
-        end,
-    },
+    { "atomicptr/BufClose.nvim", lazy = false },
 ```
 
 ## Commands

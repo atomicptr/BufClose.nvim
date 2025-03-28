@@ -1,8 +1,20 @@
+---@class BufCloseConfig
+local default_config = {
+    ---@type boolean Always force close buffers
+    always_force = false,
+}
+
+local M = {}
+
+---@type BufCloseConfig
+M.config = default_config
+
 --- Close current buffer
 --- @param force boolean|nil
-local function buf_close_current(force)
-    if force == nil then
-        force = false
+function M.buf_close_current(force)
+    force = force or false
+    if M.config.always_force then
+        force = true
     end
 
     local current = vim.api.nvim_get_current_buf()
@@ -11,9 +23,10 @@ end
 
 --- Close all buffers except for current
 --- @param force boolean|nil
-local function buf_close_others(force)
-    if force == nil then
-        force = false
+function M.buf_close_others(force)
+    force = force or false
+    if M.config.always_force then
+        force = true
     end
 
     local current = vim.api.nvim_get_current_buf()
@@ -27,9 +40,10 @@ end
 
 --- Close all buffers
 --- @param force boolean|nil
-local function buf_close_all(force)
-    if force == nil then
-        force = false
+function M.buf_close_all(force)
+    force = force or false
+    if M.config.always_force then
+        force = true
     end
 
     for _, i in ipairs(vim.api.nvim_list_bufs()) do
@@ -39,9 +53,10 @@ end
 
 --- Close all buffers to the right
 --- @param force boolean|nil
-local function buf_close_right(force)
-    if force == nil then
-        force = false
+function M.buf_close_right(force)
+    force = force or false
+    if M.config.always_force then
+        force = true
     end
 
     local current = vim.api.nvim_get_current_buf()
@@ -60,9 +75,10 @@ end
 
 --- Close all buffers to the left
 --- @param force boolean|nil
-local function buf_close_left(force)
-    if force == nil then
-        force = false
+function M.buf_close_left(force)
+    force = force or false
+    if M.config.always_force then
+        force = true
     end
 
     local current = vim.api.nvim_get_current_buf()
@@ -79,46 +95,9 @@ local function buf_close_left(force)
     end
 end
 
----@class Command
----@field names string[]
----@field fn function(boolean|nil)
----@field desc string
-
----@type Command[]
-local commands = {
-    { names = { "BufClose", "Bc" }, fn = buf_close_current, desc = "Close current buffer" },
-    {
-        names = { "BufCloseOthers", "Bco" },
-        fn = buf_close_others,
-        desc = "Close all buffers except for the current one",
-    },
-    { names = { "BufCloseAll", "Bca" }, fn = buf_close_all, desc = "Close all buffers" },
-    { names = { "BufCloseLeft", "Bcl" }, fn = buf_close_left, desc = "Close all buffers left of the current one" },
-    { names = { "BufCloseRight", "Bcr" }, fn = buf_close_right, desc = "Close all buffers right of the current one" },
-}
-
-local opts = {
-    always_force = false,
-}
-
--- register commands
-for _, cmd in ipairs(commands) do
-    for _, name in ipairs(cmd.names) do
-        vim.api.nvim_create_user_command(name, function(opt)
-            local force = opt.bang
-
-            if opts.always_force then
-                force = true
-            end
-
-            cmd.fn(force)
-        end, { bang = true, desc = cmd.desc })
-    end
+---@param opts? BufCloseConfig
+function M.setup(opts)
+    M.config = vim.tbl_extend("force", M.config, opts or {})
 end
 
-return {
-    setup = function(user_opts)
-        opts = vim.tbl_extend("force", opts, user_opts or {})
-    end,
-    opts = opts,
-}
+return M
