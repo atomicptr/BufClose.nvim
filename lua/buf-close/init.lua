@@ -53,18 +53,33 @@ end
 
 --- Close all buffers to the right
 --- @param force boolean|nil
-function M.buf_close_right(force)
+---@param args string[]
+function M.buf_close_right(force, args)
     force = force or false
     if M.config.always_force then
         force = true
     end
 
+    if #args > 1 then
+        vim.notify("Error: Too many arguments passed to buf_close_right", vim.log.levels.ERROR)
+        return
+    end
+
+    local max_count = tonumber(args[1])
+
     local current = vim.api.nvim_get_current_buf()
     local closing = false
+
+    local count = 0
 
     for _, i in ipairs(vim.api.nvim_list_bufs()) do
         if closing and vim.api.nvim_buf_is_valid(i) then
             vim.api.nvim_buf_delete(i, { force = force })
+            count = count + 1
+
+            if max_count ~= nil and count >= max_count then
+                closing = false
+            end
         end
 
         if i == current then
@@ -74,15 +89,25 @@ function M.buf_close_right(force)
 end
 
 --- Close all buffers to the left
---- @param force boolean|nil
-function M.buf_close_left(force)
+---@param force boolean|nil
+---@param args string[]
+function M.buf_close_left(force, args)
     force = force or false
     if M.config.always_force then
         force = true
     end
 
+    if #args > 1 then
+        vim.notify("Error: Too many arguments passed to buf_close_left", vim.log.levels.ERROR)
+        return
+    end
+
+    local max_count = tonumber(args[1])
+
     local current = vim.api.nvim_get_current_buf()
     local closing = true
+
+    local count = 0
 
     for _, i in ipairs(vim.api.nvim_list_bufs()) do
         if i == current then
@@ -91,6 +116,12 @@ function M.buf_close_left(force)
 
         if closing and vim.api.nvim_buf_is_valid(i) then
             vim.api.nvim_buf_delete(i, { force = force })
+
+            count = count + 1
+
+            if max_count ~= nil and count >= max_count then
+                closing = false
+            end
         end
     end
 end

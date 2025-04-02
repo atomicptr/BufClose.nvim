@@ -2,7 +2,8 @@ local bc = require "buf-close"
 
 ---@class Command
 ---@field names string[]
----@field fn function(boolean|nil)
+---@field fn function(boolean|nil, string[])
+---@field nargs string|nil
 ---@field desc string
 
 ---@type Command[]
@@ -25,11 +26,13 @@ local commands = {
     {
         names = { "BufCloseLeft", "Bcl" },
         fn = bc.buf_close_left,
+        nargs = "?",
         desc = "Close all buffers left of the current one",
     },
     {
         names = { "BufCloseRight", "Bcr" },
         fn = bc.buf_close_right,
+        nargs = "?",
         desc = "Close all buffers right of the current one",
     },
 }
@@ -38,7 +41,7 @@ local commands = {
 for _, cmd in ipairs(commands) do
     for _, name in ipairs(cmd.names) do
         vim.api.nvim_create_user_command(name, function(opt)
-            cmd.fn(opt.bang)
-        end, { bang = true, desc = cmd.desc })
+            cmd.fn(opt.bang, vim.fn.split(opt.args))
+        end, { bang = true, nargs = cmd.nargs, desc = cmd.desc })
     end
 end
