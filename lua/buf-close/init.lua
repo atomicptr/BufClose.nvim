@@ -9,6 +9,27 @@ local M = {}
 ---@type BufCloseConfig
 M.config = default_config
 
+--- Returns a list of all open buffers, try to fetch them from a buffer line plugin if available, otherwise
+--- just call vim.api.nvim_list_bufs()
+function M.buf_list()
+    -- bufferline
+    local ok, bufferline_state = pcall(require, "bufferline.state")
+    if ok then
+        local buffers = {}
+
+        for _, comp in ipairs(bufferline_state.visible_components or {}) do
+            local id = comp["id"] or nil
+            if id ~= nil then
+                table.insert(buffers, id)
+            end
+        end
+
+        return buffers
+    end
+
+    return vim.api.nvim_list_bufs()
+end
+
 --- Close current buffer
 --- @param force boolean|nil
 function M.buf_close_current(force)
@@ -31,7 +52,7 @@ function M.buf_close_others(force)
 
     local current = vim.api.nvim_get_current_buf()
 
-    for _, i in ipairs(vim.api.nvim_list_bufs()) do
+    for _, i in ipairs(M.buf_list()) do
         if i ~= current then
             vim.api.nvim_buf_delete(i, { force = force })
         end
@@ -46,7 +67,7 @@ function M.buf_close_all(force)
         force = true
     end
 
-    for _, i in ipairs(vim.api.nvim_list_bufs()) do
+    for _, i in ipairs(M.buf_list()) do
         vim.api.nvim_buf_delete(i, { force = force })
     end
 end
@@ -72,7 +93,7 @@ function M.buf_close_right(force, args)
 
     local count = 0
 
-    for _, i in ipairs(vim.api.nvim_list_bufs()) do
+    for _, i in ipairs(M.buf_list()) do
         if closing and vim.api.nvim_buf_is_valid(i) then
             vim.api.nvim_buf_delete(i, { force = force })
             count = count + 1
@@ -109,7 +130,7 @@ function M.buf_close_left(force, args)
 
     local count = 0
 
-    for _, i in ipairs(vim.api.nvim_list_bufs()) do
+    for _, i in ipairs(M.buf_list()) do
         if i == current then
             closing = false
         end
@@ -124,6 +145,17 @@ function M.buf_close_left(force, args)
             end
         end
     end
+end
+
+--- Returns pairs of buffer id, buffer name for debugging
+function M.buf_state()
+    local state = {}
+
+    for _, buf in ipairs(M.buf_list()) do
+        table.insert(state, { buf, vim.api.nvim_buf_get_name(buf) })
+    end
+
+    return state
 end
 
 ---@param opts? BufCloseConfig
