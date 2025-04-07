@@ -13,12 +13,26 @@ M.config = default_config
 --- just call vim.api.nvim_list_bufs()
 function M.buf_list()
     -- bufferline
-    local ok, bufferline_state = pcall(require, "bufferline.state")
-    if ok then
+    local bufferline_ok, bufferline = pcall(require, "bufferline.state")
+    if bufferline_ok then
         local buffers = {}
 
-        for _, comp in ipairs(bufferline_state.visible_components or {}) do
+        for _, comp in ipairs(bufferline.visible_components or {}) do
             local id = comp["id"] or nil
+            if id ~= nil then
+                table.insert(buffers, id)
+            end
+        end
+
+        return buffers
+    end
+
+    local cokeline_ok, cokeline = pcall(require, "cokeline.buffers")
+    if cokeline_ok then
+        local buffers = {}
+
+        for _, buffer in ipairs(cokeline.get_valid_buffers() or {}) do
+            local id = buffer["number"] or nil
             if id ~= nil then
                 table.insert(buffers, id)
             end
