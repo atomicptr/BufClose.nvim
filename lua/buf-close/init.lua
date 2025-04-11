@@ -123,6 +123,25 @@ function M.buf_close_right(force, args)
     end
 end
 
+--- Takes the last {num} elements from a list
+---@param tbl table
+---@param num integer
+local function take_last(tbl, num)
+    assert(type(tbl) == "table")
+    assert(type(num) == "number")
+
+    if num <= 0 then
+        return {}
+    end
+
+    local len = #tbl
+    if num >= len then
+        return tbl
+    end
+
+    return vim.list_slice(tbl, len - num + 1)
+end
+
 --- Close all buffers to the left
 ---@param force boolean|nil
 ---@param args string[]
@@ -140,24 +159,26 @@ function M.buf_close_left(force, args)
     local max_count = tonumber(args[1])
 
     local current = vim.api.nvim_get_current_buf()
-    local closing = true
 
-    local count = 0
+    local to_close = {}
 
+    -- gather buffers to close
     for _, i in ipairs(M.buf_list()) do
         if i == current then
-            closing = false
+            break
         end
 
-        if closing and vim.api.nvim_buf_is_valid(i) then
-            vim.api.nvim_buf_delete(i, { force = force })
-
-            count = count + 1
-
-            if max_count ~= nil and count >= max_count then
-                closing = false
-            end
+        if vim.api.nvim_buf_is_valid(i) then
+            table.insert(to_close, i)
         end
+    end
+
+    if max_count ~= nil then
+        to_close = take_last(to_close, max_count)
+    end
+
+    for _, i in ipairs(to_close) do
+        vim.api.nvim_buf_delete(i, { force = force })
     end
 end
 
