@@ -6,6 +6,12 @@ Inspired by Helix buffer commands
 
 ## Install
 
+### vim.pack (recommended)
+
+```lua
+vim.pack.add({"https://github.com/atomicptr/BufClose.nvim"})
+```
+
 ### Lazy
 
 ```lua
